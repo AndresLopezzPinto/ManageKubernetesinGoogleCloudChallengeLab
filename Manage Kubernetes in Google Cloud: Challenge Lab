@@ -77,7 +77,7 @@ metadata:
     path: /metrics # <--- Al final del Manifiesto PodMonitoring 
 ......
 
-      path: /metrics # <--- Al final del Manifiesto PodMonitoring 
+      (( path: /metrics # <--- Al final del Manifiesto PodMonitoring ))
 
       El campo path: /metrics le indica al recolector de Google Cloud Managed Service for Prometheus (GMP) la ruta HTTP exacta (endpoint URL) donde tu aplicación publica sus métricas.
 
