@@ -1,1 +1,179 @@
+Set up Environment Variables
 
+Con este comando puedo revisar que este Correctamente instalada la Variable de mi entorno.
+
+--> CLI: gcloud config list
+
+Esto es fundamental porque garantiza que el sistema operativo y las herramientas de desarrollo puedan localizar, ejecutar y comunicar los programas de forma global y segura
+
+
+### Tarea 1: Crear un Cluster de GKE. 
+
+gcloud container clusters create *tochange* \
+    --zone=*tochange* \
+    --release-channel=regular \
+    --num-nodes=3 \
+    --enable-autoscaling \
+    --min-nodes=2 \
+    --max-nodes=6
+
+### Tarea 2: Habilita Prometheus administrado en el clúster de GKE
+
+gcloud container clusters get-credentials hello-world-*** --zone=***
+
+1. Habilitar la Recopilacion de Prometheus administrado en el Cluster de GKE. 
+
+gcloud container clusters update hello-world-** --enable-managed-prometheus --zone=***
+
+### 2. Crea un espacio 
+kubectl create ns gmp-**
+
+En Kubernetes y Google Kubernetes Engine (GKE), un espacio de nombres (Namespace) es una forma de dividir un único cluster físico en múltiples "clusters virtuales".
+
+Para entenderlo de manera sencilla, imagina que tu cluster de GKE es un gran edificio de oficinas. Los Namespaces son las diferentes oficinas o departamentos dentro del edificio: cada uno tiene sus propios recursos, sus propios escritorios (Pods) y sus propios empleados (Servicios), pero todos comparten la infraestructura general del edificio (la red, la electricidad y los cimientos).
+
+¿Para qué sirven principalmente?
+Aislamiento y Organización (Multi-tenancy):
+Te permiten separar entornos dentro del mismo cluster. Por ejemplo, en lugar de pagar por tres clusters físicos diferentes, puedes crear un namespace para desarrollo, otro para testing y otro para produccion.
+
+Control de Recursos (Resource Quotas):
+Puedes definir límites de CPU y Memoria para cada Namespace. Esto evita que una aplicación de pruebas con errores consuma todos los recursos del cluster y afecte a tu aplicación de producción.
+
+Seguridad y Control de Acceso (RBAC):
+Puedes dar permisos a un desarrollador para que cree, edite o elimine recursos únicamente dentro de un Namespace específico (por ejemplo, desarrollo), sin que pueda alterar el resto del cluster.
+
+### 3. Descargar una App de Prometheus de Ejemplo:
+gcloud storage cp gs://spls/gsp510/prometheus-app.yaml .
+
+4. Actualizar secciones..
+
+### 5. Implementar la Aplicacion del espacio de nombres gmp-fqfx de mi cluster de GKE. 
+
+Implementacion la App directamente. 
+ kubectl apply -f ~/prometheus-app.yaml -n gmp-***
+
+Si no he tulizado las credentials este el comando para hacerlo 
+gcloud container clusters get-credentials hello-world-*** --zone=***
+
+6. gcloud storage cp gs://spls/gsp510/pod-monitoring.yaml .
+
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: prometheus-test
+  namespace: gmp-fqfx <-------- añadir esta linea agregando namespace.
+  labels:
+    app.kubernetes.io/name: prometheus-test
+......
+
+# Tarea 3
+
+kubectl -n gmp-f236 apply -f hello-app/manifests/helloweb-deployment.yaml
+
+No siempre es Importante setearlo pero si se quiere se ejecuta. 
+
+gcloud config set project qwiklabs-gcp-02-d2cb4b05d663
+
+
+gcloud container clusters get-credentials hello-world-ifse --zone=us-east1-c
+
+
+PodMonitoring.yaml2
+
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: prometheus-test
+  namespace: gmp-fqfx
+  labels:
+    app.kubernetes.io/name: prometheus-test
+spec:
+  selector:
+    matchLabels:
+      app: prometheus-test
+  endpoints:
+  - port: metrics
+    interval: 30s
+
+
+
+    Aplicar el Archivo
+    kubectl apply -f ~/pod-monitoring.yaml
+
+
+# 1. Desplegar la aplicación de ejemplo
+kubectl -n <NAMESPACE> apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/prometheus-engine/v0.17.2/examples/example-app.yaml
+
+# 2. Desplegar el PodMonitoring correspondiente
+kubectl -n <NAMESPACE> apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/prometheus-engine/v0.17.2/examples/pod-monitoring.yaml
+
+
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: prom-example
+  namespace: gmp-7df9   # <--- Debe ser tu espacio de nombres
+spec:
+  selector:
+    matchLabels:
+      app: prom-example # <--- Busca los Pods que tengan esta etiqueta
+  endpoints:
+  - port: metrics       # <--- El puerto donde la aplicación expone las métricas (8080)
+    interval: 30s       # <--- Frecuencia de recolección
+
+      path: /metrics # <--- Al final del Manifiesto PodMonitoring 
+
+      El campo path: /metrics le indica al recolector de Google Cloud Managed Service for Prometheus (GMP) la ruta HTTP exacta (endpoint URL) donde tu aplicación publica sus métricas.
+
+      ¿Cómo funciona internamente?
+Cuando el recolector (Prometheus) va a consultar un Pod para extraer métricas, construye una petición HTTP con los datos del manifiesto:
+
+$$\text{http://<IP-del-Pod>:<puerto>}\mathbf{<path>}$$
+
+port: metrics: El puerto de red (por ejemplo, 8080).
+path: /metrics: La ruta web a la que envía la petición GET.
+
+El recolector ejecutará internamente una solicitud como:
+GET http://10.x.x.x:8080/metrics
+
+
+
+    Crea una implementación en el espacio de nombres gmp-9sa1 en tu clúster de GKE desde el archivo de manifiesto helloweb-deployment.yaml. Se encuentra en la carpeta hello-app/manifests.
+
+kubectl apply -f hello-app/manifests/helloweb-deployment.yaml -n gmp-9sa1
+
+Verificar que se hayan creado 
+ kubectl get deployments -n gmp-9sa1
+kubectl get pods -n gmp-9sa1
+
+Verifica que hayas creado la implementación y navega a la página de detalles de la implementación de helloweb. Deberías ver el siguiente error:
+
+En el menú de navegación de la izquierda (el icono de las tres líneas horizontales), busca la sección Kubernetes Engine y haz clic en Workloads (o Cargas de trabajo si tienes la consola configurada en español).
+
+Tarea 4: Crea una métrica basada en registros y una política de alertas
+
+Información general sobre las métricas basadas en registros
+https://docs.cloud.google.com/logging/docs/logs-based-metrics?hl=es#about_log-based_metrics
+
+Configurar políticas de alertas basadas en registros
+https://docs.cloud.google.com/logging/docs/alerting/log-based-alerts?hl=es
+
+Configurar métricas de contador
+https://docs.cloud.google.com/logging/docs/logs-based-metrics/counter-metrics?hl=es
+
+
+
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: prometheus-test
+  namespace: gmp-27yp
+  labels:
+    app.kubernetes.io/name: prometheus-test
+spec:
+  selector:
+    matchLabels:
+      app: prometheus-test
+  endpoints:
+  - port: metrics
+    interval: 60s
