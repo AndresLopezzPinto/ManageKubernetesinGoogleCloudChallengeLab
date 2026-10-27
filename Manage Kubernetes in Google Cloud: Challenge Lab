@@ -104,12 +104,14 @@ ________________________________________________________________________________
 kubectl apply -f hello-app/manifests/helloweb-deployment.yaml -n gmp-9sa1
 
 Verificar que se hayan creado 
- kubectl get deployments -n gmp-9sa1
-kubectl get pods -n gmp-9sa1
+---------> kubectl get deployments -n gmp-***
+---------> kubectl get pods -n gmp-**
 
 Verifica que hayas creado la implementación y navega a la página de detalles de la implementación de helloweb. Deberías ver el siguiente error:
 
 En el menú de navegación de la izquierda (el icono de las tres líneas horizontales), busca la sección Kubernetes Engine y haz clic en Workloads (o Cargas de trabajo si tienes la consola configurada en español).
+
+____________________________________________________________________________________________________________________________________________________________________________________
 
 Tarea 4: Crea una métrica basada en registros y una política de alertas
 
