@@ -2,11 +2,10 @@ Set up Environment Variables
 
 Con este comando puedo revisar que este Correctamente instalada la Variable de mi entorno.
 
---> CLI: gcloud config list
+---------> CLI: gcloud config list
 
 Esto es fundamental porque garantiza que el sistema operativo y las herramientas de desarrollo puedan localizar, ejecutar y comunicar los programas de forma global y segura
-
-
+_______________________________________________________________________________________________________________________________________________________________________________
 ### Tarea 1: Crear un Cluster de GKE. 
 
 gcloud container clusters create *tochange* \
@@ -16,21 +15,26 @@ gcloud container clusters create *tochange* \
     --enable-autoscaling \
     --min-nodes=2 \
     --max-nodes=6
+______________________________________________________________________________________________________________________________________________________________________________
 
 ### Tarea 2: Habilita Prometheus administrado en el clúster de GKE
 
-gcloud container clusters get-credentials hello-world-*** --zone=***
+Si se ejecuta en GKE, usa la CLI de gcloud para definir y conectar el CLI con el clúster que acabo de crear:
+
+---------> gcloud container clusters get-credentials hello-world-*** --zone=***
+______________________________________________________________________________________________________________________________________________________________________________
 
 1. Habilitar la Recopilacion de Prometheus administrado en el Cluster de GKE. 
 
 gcloud container clusters update hello-world-** --enable-managed-prometheus --zone=***
-
+______________________________________________________________________________________________________________________________________________________________________________
 ### 2. Crea un espacio 
 kubectl create ns gmp-**
 
 En Kubernetes y Google Kubernetes Engine (GKE), un espacio de nombres (Namespace) es una forma de dividir un único cluster físico en múltiples "clusters virtuales".
 
-Para entenderlo de manera sencilla, imagina que tu cluster de GKE es un gran edificio de oficinas. Los Namespaces son las diferentes oficinas o departamentos dentro del edificio: cada uno tiene sus propios recursos, sus propios escritorios (Pods) y sus propios empleados (Servicios), pero todos comparten la infraestructura general del edificio (la red, la electricidad y los cimientos).
+Para entenderlo de manera sencilla, imagina que tu cluster de GKE es un gran edificio de oficinas. Los Namespaces son las diferentes oficinas o departamentos dentro del edificio: cada uno tiene sus propios recursos, 
+sus propios escritorios (Pods) y sus propios empleados (Servicios), pero todos comparten la infraestructura general del edificio (la red, la electricidad y los cimientos).
 
 ¿Para qué sirven principalmente?
 Aislamiento y Organización (Multi-tenancy):
@@ -41,6 +45,8 @@ Puedes definir límites de CPU y Memoria para cada Namespace. Esto evita que una
 
 Seguridad y Control de Acceso (RBAC):
 Puedes dar permisos a un desarrollador para que cree, edite o elimine recursos únicamente dentro de un Namespace específico (por ejemplo, desarrollo), sin que pueda alterar el resto del cluster.
+
+______________________________________________________________________________________________________________________________________________________________________________
 
 ### 3. Descargar una App de Prometheus de Ejemplo:
 gcloud storage cp gs://spls/gsp510/prometheus-app.yaml .
