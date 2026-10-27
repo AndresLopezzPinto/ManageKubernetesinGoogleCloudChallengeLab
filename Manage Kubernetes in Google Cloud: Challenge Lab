@@ -26,7 +26,7 @@ ________________________________________________________________________________
 
 1. Habilitar la Recopilacion de Prometheus administrado en el Cluster de GKE. 
 
-gcloud container clusters update hello-world-** --enable-managed-prometheus --zone=***
+---------> gcloud container clusters update hello-world-** --enable-managed-prometheus --zone=***
 ______________________________________________________________________________________________________________________________________________________________________________
 ### 2. Crea un espacio 
 kubectl create ns gmp-**
@@ -49,83 +49,33 @@ Puedes dar permisos a un desarrollador para que cree, edite o elimine recursos �
 ______________________________________________________________________________________________________________________________________________________________________________
 
 ### 3. Descargar una App de Prometheus de Ejemplo:
-gcloud storage cp gs://spls/gsp510/prometheus-app.yaml .
+----------> gcloud storage cp gs://spls/gsp510/prometheus-app.yaml .
+_______________________________________________________________________________________________________________________________________________________________________________
 
 4. Actualizar secciones..
+_______________________________________________________________________________________________________________________________________________________________________________
 
 ### 5. Implementar la Aplicacion del espacio de nombres gmp-fqfx de mi cluster de GKE. 
 
 Implementacion la App directamente. 
- kubectl apply -f ~/prometheus-app.yaml -n gmp-***
+--------> kubectl apply -f ~/prometheus-app.yaml -n gmp-***
+________________________________________________________________________________________________________________________________________________________________________________
 
-Si no he tulizado las credentials este el comando para hacerlo 
-gcloud container clusters get-credentials hello-world-*** --zone=***
-
-6. gcloud storage cp gs://spls/gsp510/pod-monitoring.yaml .
+--------> gcloud container clusters get-credentials hello-world-*** --zone=***
+_________________________________________________________________________________________________________________________________________________________________________________
+6. Actualizar Secciones
+_________________________________________________________________________________________________________________________________________________________________________________
 
 apiVersion: monitoring.googleapis.com/v1
 kind: PodMonitoring
 metadata:
   name: prometheus-test
-  namespace: gmp-fqfx <-------- añadir esta linea agregando namespace.
+  namespace: gmp-*** <-------- añadir esta linea agregando namespace.
   labels:
     app.kubernetes.io/name: prometheus-test
+
+    path: /metrics # <--- Al final del Manifiesto PodMonitoring 
 ......
-
-# Tarea 3
-
-kubectl -n gmp-f236 apply -f hello-app/manifests/helloweb-deployment.yaml
-
-No siempre es Importante setearlo pero si se quiere se ejecuta. 
-
-gcloud config set project qwiklabs-gcp-02-d2cb4b05d663
-
-
-gcloud container clusters get-credentials hello-world-ifse --zone=us-east1-c
-
-
-PodMonitoring.yaml2
-
-apiVersion: monitoring.googleapis.com/v1
-kind: PodMonitoring
-metadata:
-  name: prometheus-test
-  namespace: gmp-fqfx
-  labels:
-    app.kubernetes.io/name: prometheus-test
-spec:
-  selector:
-    matchLabels:
-      app: prometheus-test
-  endpoints:
-  - port: metrics
-    interval: 30s
-
-
-
-    Aplicar el Archivo
-    kubectl apply -f ~/pod-monitoring.yaml
-
-
-# 1. Desplegar la aplicación de ejemplo
-kubectl -n <NAMESPACE> apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/prometheus-engine/v0.17.2/examples/example-app.yaml
-
-# 2. Desplegar el PodMonitoring correspondiente
-kubectl -n <NAMESPACE> apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/prometheus-engine/v0.17.2/examples/pod-monitoring.yaml
-
-
-apiVersion: monitoring.googleapis.com/v1
-kind: PodMonitoring
-metadata:
-  name: prom-example
-  namespace: gmp-7df9   # <--- Debe ser tu espacio de nombres
-spec:
-  selector:
-    matchLabels:
-      app: prom-example # <--- Busca los Pods que tengan esta etiqueta
-  endpoints:
-  - port: metrics       # <--- El puerto donde la aplicación expone las métricas (8080)
-    interval: 30s       # <--- Frecuencia de recolección
 
       path: /metrics # <--- Al final del Manifiesto PodMonitoring 
 
@@ -142,7 +92,12 @@ path: /metrics: La ruta web a la que envía la petición GET.
 El recolector ejecutará internamente una solicitud como:
 GET http://10.x.x.x:8080/metrics
 
+Aplicar el Archivo
+------------> kubectl apply -f ~/pod-monitoring.yaml
 
+___________________________________________________________________________________________________________________________________________________________________________________
+
+# Tarea 3
 
     Crea una implementación en el espacio de nombres gmp-9sa1 en tu clúster de GKE desde el archivo de manifiesto helloweb-deployment.yaml. Se encuentra en la carpeta hello-app/manifests.
 
@@ -167,19 +122,3 @@ https://docs.cloud.google.com/logging/docs/alerting/log-based-alerts?hl=es
 Configurar métricas de contador
 https://docs.cloud.google.com/logging/docs/logs-based-metrics/counter-metrics?hl=es
 
-
-
-apiVersion: monitoring.googleapis.com/v1
-kind: PodMonitoring
-metadata:
-  name: prometheus-test
-  namespace: gmp-27yp
-  labels:
-    app.kubernetes.io/name: prometheus-test
-spec:
-  selector:
-    matchLabels:
-      app: prometheus-test
-  endpoints:
-  - port: metrics
-    interval: 60s
