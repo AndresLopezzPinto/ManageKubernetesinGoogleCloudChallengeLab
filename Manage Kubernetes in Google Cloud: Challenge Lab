@@ -27,10 +27,15 @@ English. Check that your environment is correctly set up. This matters because t
 gcloud config list
 
 Español. Revisa que tu entorno esté bien configurado. Es fundamental porque el sistema operativo y las herramientas de desarrollo deben poder localizar, ejecutar y comunicar los programas de forma global y segura.
-//Bash gcloud config list
+//Bash 
+gcloud config list
 
+--
 Task 1: Create a GKE Cluster / Crear un Cluster de GKE
+
 English. Create a cluster with 3 nodes that scales automatically between 2 and 6 nodes.
+
+//Bash
 gcloud container clusters create CLUSTER_NAME \
     --zone=ZONE \
     --release-channel=regular \
@@ -38,55 +43,72 @@ gcloud container clusters create CLUSTER_NAME \
     --enable-autoscaling \
     --min-nodes=2 \
     --max-nodes=6
-Flag
-Meaning (EN)
-Significado (ES)
+
 --zone
 Where the cluster runs
 Dónde corre el cluster
+
 --release-channel=regular
 Balanced update channel
 Canal de actualizaciones equilibrado
+
 --num-nodes=3
 Starting number of nodes
 Número inicial de nodos
+
 --enable-autoscaling
 Add/remove nodes automatically
 Agrega/quita nodos automáticamente
+
 --min-nodes / --max-nodes
 Autoscaling limits (2 to 6)
 Límites del autoescalado (2 a 6)
 Español. Crea un cluster con 3 nodos que escala solo entre 2 y 6 nodos. Cambia CLUSTER_NAME y ZONE por los valores de tu lab (antes *tochange*).
+
+--
 Task 2: Managed Prometheus / Prometheus Administrado
 Steps in order / Pasos en orden:
+
 1. Connect kubectl to your cluster / Conecta kubectl a tu cluster
+
+//Bash
    gcloud container clusters get-credentials CLUSTER_NAME --zone=ZONE
+
 2. Enable managed Prometheus collection / Habilita la recopilación de Prometheus administrado
+
+//Basg
    gcloud container clusters update CLUSTER_NAME --enable-managed-prometheus --zone=ZONE
+
 3. Create a namespace / Crea un namespace
    kubectl create ns gmp-xxxx
+
 4. Download the sample app / Descarga la app de ejemplo
-   gcloud storage cp gs://spls/gsp510/prometheus-app.yaml .
+   gcloud storage cp gs://spls/gsp510/prometheus-app.yaml.
+
 5. Update the YAML, then deploy it in your namespace / Actualiza el YAML y despliégalo en tu namespace
    kubectl apply -f ~/prometheus-app.yaml -n gmp-xxxx
+
 6. Update the PodMonitoring manifest, then apply it / Actualiza el manifiesto PodMonitoring y aplícalo
    kubectl apply -f ~/pod-monitoring.yaml
+
 What is a Namespace? / ¿Qué es un Namespace?
 • EN: A way to split one physical cluster into several "virtual clusters", like offices in one building: separate spaces, shared infrastructure.
 • ES: Una forma de dividir un cluster físico en varios "clusters virtuales", como las oficinas de un edificio: espacios separados, infraestructura compartida.
-Use
-EN
-ES
+
 Isolation
 Separate dev, testing and production in one cluster
 Separa desarrollo, pruebas y producción en un solo cluster
+
 Resource quotas
 Limit CPU and memory per namespace
 Limita CPU y memoria por namespace
+
 Security (RBAC)
 Give permissions only inside one namespace
 Da permisos solo dentro de un namespace
+
 PodMonitoring YAML: the two edits / las dos modificaciones
+
 apiVersion: monitoring.googleapis.com/v1
 kind: PodMonitoring
 metadata:
@@ -96,11 +118,17 @@ metadata:
     app.kubernetes.io/name: prometheus-test
 # ... at the end of the manifest / al final del manifiesto:
     path: /metrics      # <-- add this / agrega esto
+
 • EN: path: /metrics tells the Prometheus collector which URL path of your app exposes its metrics. The collector sends GET http://POD_IP:PORT/metrics.
 • ES: path: /metrics le dice al recolector de Prometheus en qué ruta de tu app están las métricas. El recolector hace GET http://IP_DEL_POD:PUERTO/metrics.
+
+--
 Task 3: Deploy helloweb / Desplegar helloweb
+
 English. Create a deployment in your namespace from the manifest hello-app/manifests/helloweb-deployment.yaml, then verify it.
+
 kubectl apply -f hello-app/manifests/helloweb-deployment.yaml -n gmp-xxxx
+
 kubectl get deployments -n gmp-xxxx
 kubectl get pods -n gmp-xxxx
 
