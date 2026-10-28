@@ -1,132 +1,106 @@
-Set up Environment Variables
+GKE + Managed Prometheus — Study Notes / Notas de Estudio
 
-Con este comando puedo revisar que este Correctamente instalada la Variable de mi entorno.
+Challenge Lab Keynotes / Puntos Clave
 
----------> CLI: gcloud config list
+The lab flow is: check setup → create cluster → connect → enable Prometheus → namespace → deploy app → PodMonitoring → deploy helloweb.
 
-Esto es fundamental porque garantiza que el sistema operativo y las herramientas de desarrollo puedan localizar, ejecutar y comunicar los programas de forma global y segura
-_______________________________________________________________________________________________________________________________________________________________________________
-### Tarea 1: Crear un Cluster de GKE. 
+English
 
-gcloud container clusters create *tochange* \
-    --zone=*tochange* \
+1. Replace every *** / *tochange* with your lab's values (cluster name, zone, namespace like gmp-xxxx). Use the SAME cluster name in create, get-credentials and update.
+2. Always run get-credentials before any kubectl command, or kubectl won't know which cluster to talk to.
+3. Always add -n gmp-xxxx (your namespace) to kubectl commands, or the resources land in default.
+4. In the PodMonitoring YAML: add namespace: gmp-xxxx under metadata, and set path: /metrics at the end.
+5. Verify each step: kubectl get pods -n gmp-xxxx and kubectl get deployments -n gmp-xxxx.
+6. For helloweb, an error on the Workloads details page is expected by the lab; open Kubernetes Engine → Workloads and read it.
+
+Español
+1. Reemplaza todos los *** / *tochange* por los valores de tu lab (nombre del cluster, zona, namespace tipo gmp-xxxx). Usa el MISMO nombre de cluster en create, get-credentials y update.
+2. Ejecuta siempre get-credentials antes de cualquier comando kubectl; si no, kubectl no sabe a qué cluster conectarse.
+3. Agrega siempre -n gmp-xxxx (tu namespace) a los comandos kubectl; si no, los recursos quedan en default.
+4. En el YAML de PodMonitoring: agrega namespace: gmp-xxxx en metadata y pon path: /metrics al final.
+5. Verifica cada paso: kubectl get pods -n gmp-xxxx y kubectl get deployments -n gmp-xxxx.
+6. Con helloweb, el lab espera que veas un error en la página de detalles de Workloads; abre Kubernetes Engine → Workloads y léelo.
+
+Setup: Environment Check / Verificar el Entorno
+English. Check that your environment is correctly set up. This matters because the operating system and tools must be able to find and run the programs globally and safely.
+//Bash
+gcloud config list
+
+Español. Revisa que tu entorno esté bien configurado. Es fundamental porque el sistema operativo y las herramientas de desarrollo deben poder localizar, ejecutar y comunicar los programas de forma global y segura.
+//Bash gcloud config list
+
+Task 1: Create a GKE Cluster / Crear un Cluster de GKE
+English. Create a cluster with 3 nodes that scales automatically between 2 and 6 nodes.
+gcloud container clusters create CLUSTER_NAME \
+    --zone=ZONE \
     --release-channel=regular \
     --num-nodes=3 \
     --enable-autoscaling \
     --min-nodes=2 \
     --max-nodes=6
-______________________________________________________________________________________________________________________________________________________________________________
-
-### Tarea 2: Habilita Prometheus administrado en el clúster de GKE
-
-Si se ejecuta en GKE, usa la CLI de gcloud para definir y conectar el CLI con el clúster que acabo de crear:
-
----------> gcloud container clusters get-credentials hello-world-*** --zone=***
-______________________________________________________________________________________________________________________________________________________________________________
-
-1. Habilitar la Recopilacion de Prometheus administrado en el Cluster de GKE. 
-
----------> gcloud container clusters update hello-world-** --enable-managed-prometheus --zone=***
-______________________________________________________________________________________________________________________________________________________________________________
-### 2. Crea un espacio 
-kubectl create ns gmp-**
-
-En Kubernetes y Google Kubernetes Engine (GKE), un espacio de nombres (Namespace) es una forma de dividir un único cluster físico en múltiples "clusters virtuales".
-
-Para entenderlo de manera sencilla, imagina que tu cluster de GKE es un gran edificio de oficinas. Los Namespaces son las diferentes oficinas o departamentos dentro del edificio: cada uno tiene sus propios recursos, 
-sus propios escritorios (Pods) y sus propios empleados (Servicios), pero todos comparten la infraestructura general del edificio (la red, la electricidad y los cimientos).
-
-¿Para qué sirven principalmente?
-Aislamiento y Organización (Multi-tenancy):
-Te permiten separar entornos dentro del mismo cluster. Por ejemplo, en lugar de pagar por tres clusters físicos diferentes, puedes crear un namespace para desarrollo, otro para testing y otro para produccion.
-
-Control de Recursos (Resource Quotas):
-Puedes definir límites de CPU y Memoria para cada Namespace. Esto evita que una aplicación de pruebas con errores consuma todos los recursos del cluster y afecte a tu aplicación de producción.
-
-Seguridad y Control de Acceso (RBAC):
-Puedes dar permisos a un desarrollador para que cree, edite o elimine recursos únicamente dentro de un Namespace específico (por ejemplo, desarrollo), sin que pueda alterar el resto del cluster.
-
-______________________________________________________________________________________________________________________________________________________________________________
-
-### 3. Descargar una App de Prometheus de Ejemplo:
-----------> gcloud storage cp gs://spls/gsp510/prometheus-app.yaml .
-_______________________________________________________________________________________________________________________________________________________________________________
-
-4. Actualizar secciones..
-_______________________________________________________________________________________________________________________________________________________________________________
-
-### 5. Implementar la Aplicacion del espacio de nombres gmp-fqfx de mi cluster de GKE. 
-
-Implementacion la App directamente. 
---------> kubectl apply -f ~/prometheus-app.yaml -n gmp-***
-________________________________________________________________________________________________________________________________________________________________________________
-
---------> gcloud container clusters get-credentials hello-world-*** --zone=***
-_________________________________________________________________________________________________________________________________________________________________________________
-6. Actualizar Secciones
-_________________________________________________________________________________________________________________________________________________________________________________
-
+Flag
+Meaning (EN)
+Significado (ES)
+--zone
+Where the cluster runs
+Dónde corre el cluster
+--release-channel=regular
+Balanced update channel
+Canal de actualizaciones equilibrado
+--num-nodes=3
+Starting number of nodes
+Número inicial de nodos
+--enable-autoscaling
+Add/remove nodes automatically
+Agrega/quita nodos automáticamente
+--min-nodes / --max-nodes
+Autoscaling limits (2 to 6)
+Límites del autoescalado (2 a 6)
+Español. Crea un cluster con 3 nodos que escala solo entre 2 y 6 nodos. Cambia CLUSTER_NAME y ZONE por los valores de tu lab (antes *tochange*).
+Task 2: Managed Prometheus / Prometheus Administrado
+Steps in order / Pasos en orden:
+1. Connect kubectl to your cluster / Conecta kubectl a tu cluster
+   gcloud container clusters get-credentials CLUSTER_NAME --zone=ZONE
+2. Enable managed Prometheus collection / Habilita la recopilación de Prometheus administrado
+   gcloud container clusters update CLUSTER_NAME --enable-managed-prometheus --zone=ZONE
+3. Create a namespace / Crea un namespace
+   kubectl create ns gmp-xxxx
+4. Download the sample app / Descarga la app de ejemplo
+   gcloud storage cp gs://spls/gsp510/prometheus-app.yaml .
+5. Update the YAML, then deploy it in your namespace / Actualiza el YAML y despliégalo en tu namespace
+   kubectl apply -f ~/prometheus-app.yaml -n gmp-xxxx
+6. Update the PodMonitoring manifest, then apply it / Actualiza el manifiesto PodMonitoring y aplícalo
+   kubectl apply -f ~/pod-monitoring.yaml
+What is a Namespace? / ¿Qué es un Namespace?
+• EN: A way to split one physical cluster into several "virtual clusters", like offices in one building: separate spaces, shared infrastructure.
+• ES: Una forma de dividir un cluster físico en varios "clusters virtuales", como las oficinas de un edificio: espacios separados, infraestructura compartida.
+Use
+EN
+ES
+Isolation
+Separate dev, testing and production in one cluster
+Separa desarrollo, pruebas y producción en un solo cluster
+Resource quotas
+Limit CPU and memory per namespace
+Limita CPU y memoria por namespace
+Security (RBAC)
+Give permissions only inside one namespace
+Da permisos solo dentro de un namespace
+PodMonitoring YAML: the two edits / las dos modificaciones
 apiVersion: monitoring.googleapis.com/v1
 kind: PodMonitoring
 metadata:
   name: prometheus-test
-  namespace: gmp-*** <-------- añadir esta linea agregando namespace.
+  namespace: gmp-xxxx   # <-- add this line / agrega esta línea
   labels:
     app.kubernetes.io/name: prometheus-test
-
-    path: /metrics # <--- Al final del Manifiesto PodMonitoring 
-......
-
-      (( path: /metrics # <--- Al final del Manifiesto PodMonitoring ))
-
-      El campo path: /metrics le indica al recolector de Google Cloud Managed Service for Prometheus (GMP) la ruta HTTP exacta (endpoint URL) donde tu aplicación publica sus métricas.
-
-      ¿Cómo funciona internamente?
-Cuando el recolector (Prometheus) va a consultar un Pod para extraer métricas, construye una petición HTTP con los datos del manifiesto:
-
-$$\text{http://<IP-del-Pod>:<puerto>}\mathbf{<path>}$$
-
-port: metrics: El puerto de red (por ejemplo, 8080).
-path: /metrics: La ruta web a la que envía la petición GET.
-
-El recolector ejecutará internamente una solicitud como:
-GET http://10.x.x.x:8080/metrics
-
-Aplicar el Archivo
-------------> kubectl apply -f ~/pod-monitoring.yaml
-
-___________________________________________________________________________________________________________________________________________________________________________________
-
-# Tarea 3
-
-    Crea una implementación en el espacio de nombres gmp-9sa1 en tu clúster de GKE desde el archivo de manifiesto helloweb-deployment.yaml. Se encuentra en la carpeta hello-app/manifests.
-
-kubectl apply -f hello-app/manifests/helloweb-deployment.yaml -n gmp-9sa1
-
-Verificar que se hayan creado 
----------> kubectl get deployments -n gmp-***
----------> kubectl get pods -n gmp-**
-
-Verifica que hayas creado la implementación y navega a la página de detalles de la implementación de helloweb. Deberías ver el siguiente error:
-
-En el menú de navegación de la izquierda (el icono de las tres líneas horizontales), busca la sección Kubernetes Engine y haz clic en Workloads (o Cargas de trabajo si tienes la consola configurada en español).
-
-____________________________________________________________________________________________________________________________________________________________________________________
-
-Tarea 4: Crea una métrica basada en registros y una política de alertas
-
-Información general sobre las métricas basadas en registros
-https://docs.cloud.google.com/logging/docs/logs-based-metrics?hl=es#about_log-based_metrics
-
-Configurar políticas de alertas basadas en registros
-https://docs.cloud.google.com/logging/docs/alerting/log-based-alerts?hl=es
-
-Configurar métricas de contador
-https://docs.cloud.google.com/logging/docs/logs-based-metrics/counter-metrics?hl=es
-
-https://www.skills.google/focuses/619?catalog_rank=%7B%22rank%22%3A1%2C%22num_filters%22%3A0%2C%22has_search%22%3Atrue%7D&locale=es&parent=catalog&search_id=104155267
-
-LAB 
-
-https://www.skills.google/focuses/619?catalog_rank=%7B%22rank%22%3A1%2C%22num_filters%22%3A0%2C%22has_search%22%3Atrue%7D&locale=es&parent=catalog&search_id=104155267
+# ... at the end of the manifest / al final del manifiesto:
+    path: /metrics      # <-- add this / agrega esto
+• EN: path: /metrics tells the Prometheus collector which URL path of your app exposes its metrics. The collector sends GET http://POD_IP:PORT/metrics.
+• ES: path: /metrics le dice al recolector de Prometheus en qué ruta de tu app están las métricas. El recolector hace GET http://IP_DEL_POD:PUERTO/metrics.
+Task 3: Deploy helloweb / Desplegar helloweb
+English. Create a deployment in your namespace from the manifest hello-app/manifests/helloweb-deployment.yaml, then verify it.
+kubectl apply -f hello-app/manifests/helloweb-deployment.yaml -n gmp-xxxx
+kubectl get deployments -n gmp-xxxx
+kubectl get pods -n gmp-xxxx
 
