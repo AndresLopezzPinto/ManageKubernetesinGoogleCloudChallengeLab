@@ -22,18 +22,18 @@ Español
 6. Con helloweb, el lab espera que veas un error en la página de detalles de Workloads; abre Kubernetes Engine → Workloads y léelo.
 
 Setup: Environment Check / Verificar el Entorno
-English. Check that your environment is correctly set up. This matters because the operating system and tools must be able to find and run the programs globally and safely.
-//Bash
-gcloud config list
 
+English. Check that your environment is correctly set up. This matters because the operating system and tools must be able to find and run the programs globally and safely.
 Español. Revisa que tu entorno esté bien configurado. Es fundamental porque el sistema operativo y las herramientas de desarrollo deben poder localizar, ejecutar y comunicar los programas de forma global y segura.
-//Bash 
+
+//Bash
 gcloud config list
 
 --
 Task 1: Create a GKE Cluster / Crear un Cluster de GKE
 
 English. Create a cluster with 3 nodes that scales automatically between 2 and 6 nodes.
+Español. Crea un cluster con 3 nodos que escala solo entre 2 y 6 nodos. Cambia CLUSTER_NAME y ZONE por los valores de tu lab (antes *tochange*).
 
 //Bash
 gcloud container clusters create CLUSTER_NAME \
@@ -63,7 +63,6 @@ Agrega/quita nodos automáticamente
 --min-nodes / --max-nodes
 Autoscaling limits (2 to 6)
 Límites del autoescalado (2 a 6)
-Español. Crea un cluster con 3 nodos que escala solo entre 2 y 6 nodos. Cambia CLUSTER_NAME y ZONE por los valores de tu lab (antes *tochange*).
 
 --
 Task 2: Managed Prometheus / Prometheus Administrado
@@ -131,4 +130,94 @@ kubectl apply -f hello-app/manifests/helloweb-deployment.yaml -n gmp-xxxx
 
 kubectl get deployments -n gmp-xxxx
 kubectl get pods -n gmp-xxxx
+
+Task 4:  Crea una métrica basada en registros y una política de alertas/ EN 
+
+Crea una métrica basada en registros
+
+En el Explorador de registros, crea una consulta que devuelva las advertencias o los errores que viste en la sección anterior sobre el clúster.
+
+My own sample: severity=ERROR
+
+pod-image-errors
+
+resource.type="k8s_pod"
+jsonPayload.reason="Failed"
+jsonPayload.message:"Failed to apply default image tag"
+jsonPayload.message:"invalid reference format"
+
+Runquery 
+resource.type="k8s_pod"
+AND jsonPayload.reason="Failed"
+AND (jsonPayload.message:"Failed to apply default image tag" OR jsonPayload.message:"invalid reference format")
+
+
+JSON Alertin Plociuty 
+{
+  "displayName": "Pod Error Alert",
+  "combiner": "OR",
+  "enabled": true,
+  "conditions": [
+    {
+      "displayName": "Condition: Pod Error Threshold",
+      "conditionThreshold": {
+        "filter": "resource.type = \"k8s_pod\" AND metric.type = \"logging.googleapis.com/user/<METRIC_NAME>\"",
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0,
+        "duration": "0s",
+        "trigger": {
+          "count": 1
+        },
+        "aggregations": [
+          {
+            "alignmentPeriod": "600s",
+            "perSeriesAligner": "ALIGN_COUNT",
+            "crossSeriesReducer": "REDUCE_SUM"
+          }
+        ]
+      }
+    }
+  ],
+  "notificationChannels": []
+}
+
+gcloud monitoring policies create \
+  --display-name="Pod Error Alert" \
+  --condition-display-name="Condition: Pod Error Threshold" \
+  --condition-filter='resource.type = "k8s_pod" AND metric.type = "logging.googleapis.com/user/<METRIC_NAME>"' \
+  --aggregation='{"alignmentPeriod": "600s", "perSeriesAligner": "ALIGN_COUNT", "crossSeriesReducer": "REDUCE_SUM"}' \
+  --duration="0s" \
+  --if="> 0" \
+  --trigger-count=1 \
+  --combiner="OR"
+
+{
+  "displayName": "Pod Error Alert",
+  "combiner": "OR",
+  "enabled": true,
+  "conditions": [
+    {
+      "displayName": "Condition: Pod Error Threshold",
+      "conditionThreshold": {
+        "filter": "resource.type = \"k8s_pod\" AND metric.type = \"logging.googleapis.com/user/pod-image-errors\"",
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0,
+        "duration": "0s",
+        "trigger": {
+          "count": 1
+        },
+        "aggregations": [
+          {
+            "alignmentPeriod": "600s",
+            "perSeriesAligner": "ALIGN_COUNT",
+            "crossSeriesReducer": "REDUCE_SUM"
+          }
+        ]
+      }
+    }
+  ],
+  "notificationChannels": []
+}
+
+
 
