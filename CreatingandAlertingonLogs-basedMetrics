@@ -1,0 +1,38 @@
+Task 1. Deploy a GKE cluster 
+
+Task 2. Create a log-based alert
+Tarea 2: Crea una alerta basada en registros
+
+Las alertas basadas en registros te avisan cada vez que aparece un mensaje específico en tus registros. Para probarlas, configura una alerta basada en registros que te avise cuando una VM deje de ejecutarse.
+
+resource.type="gce_instance" protoPayload.methodName="v1.compute.instances.stop"
+
+Este filtro de búsqueda se utiliza en Cloud Logging de Google Cloud para buscar y filtrar registros (logs) específicos relacionados con la detención de máquinas virtuales.
+
+Aquí te explico detalladamente qué significa cada parámetro:
+
+1. resource.type="gce_instance"
+¿Qué hace? Filtra los registros según el tipo de recurso supervisado (monitored resource).
+Significado: Indica que solo quieres ver los registros pertenecientes a instancias de Google Compute Engine (GCE) (es decir, tus máquinas virtuales).
+
+2. protoPayload.methodName="v1.compute.instances.stop"
+¿Qué hace? Filtra los registros de auditoría (Cloud Audit Logs) buscando una acción o método de API específico.
+Significado: Filtra los eventos donde el método ejecutado fue v1.compute.instances.stop. Esto corresponde exactamente a la acción de detener (apagar) una instancia de máquina virtual, ya sea que haya sido iniciada por un usuario a través de la consola, mediante la API, por un script de gcloud, o de manera automática.
+¿Para qué sirve este comando en conjunto?
+Al combinar ambos parámetros, este filtro te permite identificar cuándo y quién detuvo una máquina virtual en tu proyecto.
+
+Si ejecutas esta consulta en el Explorador de Logs, obtendrás una lista de los eventos de apagado. Al expandir cualquiera de los registros resultantes, podrás ver detalles muy útiles dentro del campo protoPayload, tales como:
+
+authenticationInfo.principalEmail: El correo electrónico del usuario o la cuenta de servicio que solicitó apagar la máquina virtual.
+timestamp: La fecha y hora exacta en la que se realizó la acción.
+resourceName: El nombre de la instancia de VM específica que fue detenida.
+¿Te gustaría saber cómo guardar esta consult
+
+
+La politica de alerta se crea desde el registro basado en la metrica 
+Task 6. Create a metrics-based alert
+From the left side menu for Logging, click on Log-based Metrics under Configure.
+
+In user-defined metrics, click on More actions (more actions icon) for hello-app-error, and select Create alert from metric.
+
+Under Select a Metric, the metric parameters will automatically fill in.
